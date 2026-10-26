@@ -21,7 +21,9 @@ php artisan migrate
 
 PHP 8.2+, Laravel 11, 12 or 13. The tables (`llm_providers`, `llm_routes`,
 `llm_prompt_templates`, `llm_calls`) live on the default connection — with a
-schema per tenant, run the migration per tenant.
+schema per tenant, set `LLM_RUN_MIGRATIONS=false`, publish the migration
+(`php artisan vendor:publish --tag=llm-migrations`) into the tenant path and
+run it per tenant.
 
 ## Configure a provider and routes
 

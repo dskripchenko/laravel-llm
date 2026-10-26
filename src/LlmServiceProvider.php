@@ -42,7 +42,11 @@ final class LlmServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        // A host that keeps the tables elsewhere (schema per tenant) turns
+        // this off and publishes them (`--tag=llm-migrations`).
+        if (config('llm.run_migrations', true) === true) {
+            $this->loadMigrationsFrom(__DIR__.'/../database/migrations');
+        }
 
         if ($this->app->runningInConsole()) {
             $this->publishes([__DIR__.'/../config/llm.php' => $this->app->configPath('llm.php')], 'llm-config');

@@ -3,6 +3,9 @@
 ## [0.1.0] - Unreleased
 
 ### Added
+
+- `llm.run_migrations` (`LLM_RUN_MIGRATIONS`): a schema-per-tenant host turns the
+  automatic migrations off and publishes them into its tenant path.
 - OpenAI-compatible transport over Laravel's Http client:
   `/chat/completions` (plain and SSE streaming, tools, `response_format`
   with a JSON schema), `/embeddings`, `/rerank`.

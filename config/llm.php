@@ -8,6 +8,11 @@ return [
     | HTTP defaults for every provider. A provider's `limits` may override
     | `timeout` (seconds) per row.
     */
+    // Load the package migrations automatically. A multi-tenant host that
+    // keeps these tables in tenant schemas turns this off and publishes them
+    // (`php artisan vendor:publish --tag=llm-migrations`) into its tenant path.
+    'run_migrations' => env('LLM_RUN_MIGRATIONS', true),
+
     'http' => [
         'timeout' => env('LLM_TIMEOUT', 120),
         'connect_timeout' => env('LLM_CONNECT_TIMEOUT', 5),
