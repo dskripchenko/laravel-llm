@@ -21,5 +21,6 @@
 
 ## Reporting a vulnerability
 
-Please report privately by e-mail to denskrp90@gmail.com, not in a public
-issue.
+Please report privately through GitHub's
+[security advisories](https://github.com/dskripchenko/laravel-llm/security/advisories/new),
+not in a public issue.
