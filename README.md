@@ -1,5 +1,7 @@
 # dskripchenko/laravel-llm
 
+> 🌐 **English** · [Русский](docs/ru/README.md) · [Deutsch](docs/de/README.md) · [中文](docs/zh/README.md)
+
 Local LLMs for Laravel through the OpenAI-compatible API that Ollama, vLLM,
 LM Studio and llama.cpp server all speak — no SDK, only Laravel's Http
 client. Callers ask for a **purpose** (`summarize`, `classify`…), never a
@@ -19,7 +21,7 @@ composer require dskripchenko/laravel-llm
 php artisan migrate
 ```
 
-PHP 8.2+, Laravel 11, 12 or 13. The tables (`llm_providers`, `llm_routes`,
+PHP 8.2–8.5, Laravel 11, 12 or 13. The tables (`llm_providers`, `llm_routes`,
 `llm_prompt_templates`, `llm_calls`) live on the default connection — with a
 schema per tenant, set `LLM_RUN_MIGRATIONS=false`, publish the migration
 (`php artisan vendor:publish --tag=llm-migrations`) into the tenant path and
@@ -84,6 +86,14 @@ Llm::assertSent(fn ($call) => $call->contains('It crashes', 'user'));
 - [The `llm.run` process-engine effect](docs/en/process-engine.md)
 - [Testing](docs/en/testing.md)
 
+## Testing
+
+```bash
+composer test      # PHPUnit + Testbench, SQLite in memory, no network
+composer analyse   # PHPStan, level max
+composer format    # Pint
+```
+
 ## License
 
-MIT
+MIT. See [LICENSE](LICENSE).

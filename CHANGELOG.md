@@ -1,6 +1,10 @@
 # Changelog
 
-## [0.1.0] - Unreleased
+All notable changes to this project are documented in this file. The
+format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the
+project adheres to [Semantic Versioning](https://semver.org/).
+
+## [0.1.0] - 2026-10-27
 
 ### Added
 
@@ -28,3 +32,5 @@
 - `Mode` (`apply`, `suggest`, `approve`) for human-in-the-loop flows.
 - `Llm::fake()` with sequences, per-scenario answers, failures, and
   assertions.
+
+[0.1.0]: https://github.com/dskripchenko/laravel-llm/releases/tag/v0.1.0
