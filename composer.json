@@ -3,13 +3,29 @@
     "description": "Local LLMs for Laravel through OpenAI-compatible APIs (Ollama, vLLM, LM Studio, llama.cpp): providers and purpose routes in the database with fallback, versioned prompt templates, structured output validated against a JSON schema, a call log with pruning, token quotas, a process-engine effect and a test fake.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["laravel", "llm", "ollama", "vllm", "openai-compatible", "structured-output", "prompt", "process-engine"],
+    "keywords": [
+        "laravel",
+        "llm",
+        "ollama",
+        "vllm",
+        "openai-compatible",
+        "structured-output",
+        "prompt",
+        "process-engine",
+        "dskripchenko"
+    ],
+    "homepage": "https://github.com/dskripchenko/laravel-llm",
     "authors": [
         {
             "name": "Denis Skripchenko",
             "email": "denskrp90@gmail.com"
         }
     ],
+    "support": {
+        "issues": "https://github.com/dskripchenko/laravel-llm/issues",
+        "source": "https://github.com/dskripchenko/laravel-llm",
+        "security": "https://github.com/dskripchenko/laravel-llm/security/policy"
+    },
     "require": {
         "php": "^8.2",
         "illuminate/console": "^11.0 || ^12.0 || ^13.0",
@@ -20,7 +36,7 @@
     },
     "require-dev": {
         "dskripchenko/process-engine": "^1.0",
-        "laravel/pint": "^1.0",
+        "laravel/pint": "^1.18",
         "orchestra/testbench": "^9.0 || ^10.0 || ^11.0",
         "phpstan/phpstan": "^2.0",
         "phpunit/phpunit": "^11.0 || ^12.0"
@@ -46,6 +62,9 @@
             "aliases": {
                 "Llm": "Dskripchenko\\Llm\\Facades\\Llm"
             }
+        },
+        "branch-alias": {
+            "dev-main": "0.x-dev"
         }
     },
     "scripts": {
