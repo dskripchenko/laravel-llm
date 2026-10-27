@@ -83,7 +83,12 @@ Or fake the effect away with `->fake(RunLlm::class, returns: Send::to(...))`.
 
 ## A live smoke test
 
-The package's own suite has one test against a local Ollama
-(`LLM_OLLAMA_URL`, default `http://127.0.0.1:11434`): it uses the smallest
-chat model already pulled and is skipped when Ollama is not running or has
-no model.
+The package's own suite has one opt-in test against a local Ollama. It runs
+only when `LLM_OLLAMA_URL` is set (for example `http://127.0.0.1:11434`),
+uses the smallest chat model already pulled, and is skipped when Ollama is
+not running or has no chat model. Every other test runs without a network:
+stray HTTP requests fail the suite.
+
+```bash
+LLM_OLLAMA_URL=http://127.0.0.1:11434 vendor/bin/phpunit --group live
+```

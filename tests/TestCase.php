@@ -10,11 +10,20 @@ use Dskripchenko\Llm\Models\Provider;
 use Dskripchenko\Llm\Models\Route;
 use Dskripchenko\Llm\Purpose;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Http;
 use Orchestra\Testbench\TestCase as Base;
 
 abstract class TestCase extends Base
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        // The suite never talks to a real server: every request must be faked.
+        Http::preventStrayRequests();
+    }
 
     protected function getPackageProviders($app): array
     {

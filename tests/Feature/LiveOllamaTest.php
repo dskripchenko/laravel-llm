@@ -8,24 +8,32 @@ use Dskripchenko\Llm\Facades\Llm;
 use Dskripchenko\Llm\Purpose;
 use Dskripchenko\Llm\Tests\TestCase;
 use Illuminate\Support\Facades\Http;
+use PHPUnit\Framework\Attributes\Group;
 use Throwable;
 
 /**
- * One real call against a local Ollama (LLM_OLLAMA_URL, default
- * http://127.0.0.1:11434) with the smallest model already pulled. Skipped
- * when Ollama is not running or has no model; never pulls one.
+ * One real call against a local Ollama with the smallest chat model already
+ * pulled. Opt-in: runs only when LLM_OLLAMA_URL is set (for example
+ * http://127.0.0.1:11434), so the regular suite never touches the network.
+ * Skipped when Ollama is not running or has no chat model; never pulls one.
  */
+#[Group('live')]
 final class LiveOllamaTest extends TestCase
 {
     public function test_a_structured_answer_from_a_local_model(): void
     {
-        $base = rtrim((string) (getenv('LLM_OLLAMA_URL') ?: 'http://127.0.0.1:11434'), '/');
+        $url = getenv('LLM_OLLAMA_URL');
+        if (! is_string($url) || $url === '') {
+            $this->markTestSkipped('Set LLM_OLLAMA_URL to run the live Ollama test');
+        }
+        Http::allowStrayRequests();
+        $base = rtrim($url, '/');
         try {
             $tags = Http::timeout(2)->get($base.'/api/tags')->json('models');
         } catch (Throwable) {
             $this->markTestSkipped("Ollama is not running at {$base}");
         }
-        $models = array_values(array_filter(is_array($tags) ? $tags : [], fn ($m) => is_array($m) && ! str_contains((string) ($m['name'] ?? ''), 'embed')));
+        $models = array_values(array_filter(is_array($tags) ? $tags : [], fn ($m) => is_array($m) && self::isChatModel($m)));
         if ($models === []) {
             $this->markTestSkipped('Ollama has no chat model pulled');
         }
@@ -43,5 +51,26 @@ final class LiveOllamaTest extends TestCase
 
         $this->assertContains($result->data['type'] ?? null, ['bug', 'feature']);
         $this->assertGreaterThan(0, $result->usage->total());
+    }
+
+    /**
+     * Embedding-only models (nomic-embed, bge-m3 …) answer chat requests with 400.
+     *
+     * @param  array<mixed>  $model
+     */
+    private static function isChatModel(array $model): bool
+    {
+        if (str_contains((string) ($model['name'] ?? ''), 'embed')) {
+            return false;
+        }
+        $details = is_array($model['details'] ?? null) ? $model['details'] : [];
+        $families = array_merge([(string) ($details['family'] ?? '')], is_array($details['families'] ?? null) ? $details['families'] : []);
+        foreach ($families as $family) {
+            if (str_contains((string) $family, 'bert')) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }
