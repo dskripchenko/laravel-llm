@@ -8,7 +8,7 @@ namespace Dskripchenko\Llm;
  * How a model's answer reaches the data it is about (human in the loop).
  *
  * - `Apply`: the process applies the answer at once (low-risk, reversible
- *   changes such as a label suggestion that is also shown in history).
+ *   changes such as a tag suggestion that is also shown in history).
  * - `Suggest`: the answer is stored as a suggestion next to the subject;
  *   a person accepts, edits or dismisses it whenever they like, the
  *   process does not wait.

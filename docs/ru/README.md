@@ -53,16 +53,16 @@ Route::create(['purpose' => 'summarize', 'provider_id' => $gpu->id, 'model' => '
 use Dskripchenko\Llm\Facades\Llm;
 
 // Из пресета (см. prompts-and-schemas.md)
-$result = Llm::prompt(ClassifyIssue::class, ['body' => $issue->description])
-    ->about($issue)              // журналируется как предмет вызова
+$result = Llm::prompt(ClassifyArticle::class, ['body' => $article->description])
+    ->about($article)              // журналируется как предмет вызова
     ->run();
-$result->data;                   // ['type' => 'bug', 'priority' => 2], проверено по схеме
+$result->data;                   // ['type' => 'guide', 'level' => 2], проверено по схеме
 
 // Вручную
 $result = Llm::request('summarize')
-    ->system('Summarize the issue in two sentences.')
-    ->user('Issue:')
-    ->data('issue', $issue->description)     // недоверенный текст → блок данных
+    ->system('Summarize the article in two sentences.')
+    ->user('Article:')
+    ->data('article', $article->description)     // недоверенный текст → блок данных
     ->stream(function (string $delta): void { echo $delta; });
 
 Llm::embed(['first text', 'second text'])->vectors;
@@ -72,12 +72,12 @@ Llm::rerank('query', $documents)->order();
 ## Тестирование кода
 
 ```php
-Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2], 'summarize' => 'Short.']);
+Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2], 'summarize' => 'Short.']);
 
 // … прогоните свой код …
 
 Llm::assertPurpose('classify', 1);
-Llm::assertSent(fn ($call) => $call->contains('It crashes', 'user'));
+Llm::assertSent(fn ($call) => $call->contains('To reset a password, open Settings', 'user'));
 ```
 
 ## Документация

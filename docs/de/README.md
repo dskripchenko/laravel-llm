@@ -55,16 +55,16 @@ enthalten Mandantendaten.
 use Dskripchenko\Llm\Facades\Llm;
 
 // Aus einem Preset (siehe docs/de/prompts-and-schemas.md)
-$result = Llm::prompt(ClassifyIssue::class, ['body' => $issue->description])
-    ->about($issue)              // als Gegenstand des Aufrufs protokolliert
+$result = Llm::prompt(ClassifyArticle::class, ['body' => $article->description])
+    ->about($article)              // als Gegenstand des Aufrufs protokolliert
     ->run();
-$result->data;                   // ['type' => 'bug', 'priority' => 2], validiert
+$result->data;                   // ['type' => 'guide', 'level' => 2], validiert
 
 // Von Hand
 $result = Llm::request('summarize')
-    ->system('Summarize the issue in two sentences.')
-    ->user('Issue:')
-    ->data('issue', $issue->description)     // nicht vertrauenswürdiger Text → ein Datenblock
+    ->system('Summarize the article in two sentences.')
+    ->user('Article:')
+    ->data('article', $article->description)     // nicht vertrauenswürdiger Text → ein Datenblock
     ->stream(function (string $delta): void { echo $delta; });
 
 Llm::embed(['first text', 'second text'])->vectors;
@@ -74,12 +74,12 @@ Llm::rerank('query', $documents)->order();
 ## Testen
 
 ```php
-Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2], 'summarize' => 'Short.']);
+Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2], 'summarize' => 'Short.']);
 
 // … den eigenen Code ausführen …
 
 Llm::assertPurpose('classify', 1);
-Llm::assertSent(fn ($call) => $call->contains('It crashes', 'user'));
+Llm::assertSent(fn ($call) => $call->contains('To reset a password, open Settings', 'user'));
 ```
 
 ## Dokumentation

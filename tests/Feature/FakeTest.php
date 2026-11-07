@@ -10,7 +10,7 @@ use Dskripchenko\Llm\Models\Call;
 use Dskripchenko\Llm\Purpose;
 use Dskripchenko\Llm\Testing\FakeResponse;
 use Dskripchenko\Llm\Testing\RecordedCall;
-use Dskripchenko\Llm\Tests\Fixtures\ClassifyIssue;
+use Dskripchenko\Llm\Tests\Fixtures\ClassifyArticle;
 use Dskripchenko\Llm\Tests\TestCase;
 use Illuminate\Support\Facades\Http;
 use LogicException;
@@ -21,16 +21,16 @@ final class FakeTest extends TestCase
     public function test_a_list_is_consumed_in_order_without_any_route_configured(): void
     {
         Http::fake();
-        Llm::fake(['first', ['type' => 'bug', 'priority' => 1], FakeResponse::toolCall('set_label', ['label' => 'bug'])]);
+        Llm::fake(['first', ['type' => 'guide', 'level' => 1], FakeResponse::toolCall('set_label', ['label' => 'guide'])]);
 
         $this->assertSame('first', Llm::request()->user('a')->run()->text);
-        $this->assertSame(['type' => 'bug', 'priority' => 1], Llm::prompt(ClassifyIssue::class, ['body' => 'b'])->run()->data);
+        $this->assertSame(['type' => 'guide', 'level' => 1], Llm::prompt(ClassifyArticle::class, ['body' => 'b'])->run()->data);
         $tool = Llm::request()->user('c')->tools([['type' => 'function', 'function' => ['name' => 'set_label']]])->run();
-        $this->assertSame(['label' => 'bug'], $tool->toolCalls[0]->arguments);
+        $this->assertSame(['label' => 'guide'], $tool->toolCalls[0]->arguments);
 
         Llm::assertSentCount(3);
         Llm::assertPurpose(Purpose::Classify, 1);
-        Llm::assertScenario('issue.classify');
+        Llm::assertScenario('article.classify');
         Llm::assertSent(fn (RecordedCall $c) => $c->contains('b', 'user') && $c->model() === 'fake-model' && $c->provider->name === 'fake');
         Llm::assertNotSent(fn (RecordedCall $c) => $c->contains('nothing like this'));
         Http::assertNothingSent();
@@ -43,13 +43,13 @@ final class FakeTest extends TestCase
     public function test_a_map_answers_by_scenario_prompt_key_or_purpose(): void
     {
         Llm::fake([
-            'issue.classify' => Llm::sequence([['type' => 'chore'], ['type' => 'bug', 'priority' => 3]]),
+            'article.classify' => Llm::sequence([['type' => 'chore'], ['type' => 'guide', 'level' => 3]]),
             'wiki.answer' => fn (RecordedCall $c) => 'You asked: '.$c->text('user'),
             'summarize' => 'a summary',
         ]);
 
         // The first answer is invalid against the schema: the real retry runs on the fake.
-        $this->assertSame(['type' => 'bug', 'priority' => 3], Llm::prompt(ClassifyIssue::class, ['body' => 'b'])->run()->data);
+        $this->assertSame(['type' => 'guide', 'level' => 3], Llm::prompt(ClassifyArticle::class, ['body' => 'b'])->run()->data);
         $this->assertSame('You asked: why?', Llm::request()->scenario('wiki.answer')->user('why?')->run()->text);
         $this->assertSame('a summary', Llm::request(Purpose::Summarize)->user('x')->run()->text);
         $this->assertSame('a summary', Llm::request(Purpose::Summarize)->scenario('again')->user('x')->run()->text);
@@ -57,7 +57,7 @@ final class FakeTest extends TestCase
 
         $this->expectException(LogicException::class);
         $this->expectExceptionMessage('exhausted');
-        Llm::prompt(ClassifyIssue::class, ['body' => 'b'])->run();
+        Llm::prompt(ClassifyArticle::class, ['body' => 'b'])->run();
     }
 
     public function test_failures_can_be_faked_and_exercise_the_real_fallback(): void

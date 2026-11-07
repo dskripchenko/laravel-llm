@@ -33,14 +33,14 @@ final class TransportTest extends TestCase
             [['type' => 'function', 'function' => ['name' => 'set_label', 'parameters' => ['type' => 'object']]]],
             'auto',
             ['type' => 'object', 'properties' => ['a' => ['type' => 'string']]],
-            'issue',
+            'article',
         );
     }
 
     public function test_chat_sends_tools_and_a_json_schema_response_format(): void
     {
         Http::fake(['llm.local/*' => Http::response(self::completion('', 20, 3, [
-            ['id' => 'call_9', 'type' => 'function', 'function' => ['name' => 'set_label', 'arguments' => '{"label":"bug"}']],
+            ['id' => 'call_9', 'type' => 'function', 'function' => ['name' => 'set_label', 'arguments' => '{"label":"guide"}']],
         ]))]);
         $provider = $this->provider('local', 'http://llm.local/v1/', ['api_key' => 'sk-secret']);
 
@@ -56,12 +56,12 @@ final class TransportTest extends TestCase
                 && $body['tools'][0]['function']['name'] === 'set_label'
                 && $body['tool_choice'] === 'auto'
                 && $body['response_format']['type'] === 'json_schema'
-                && $body['response_format']['json_schema']['name'] === 'issue'
+                && $body['response_format']['json_schema']['name'] === 'article'
                 && $body['response_format']['json_schema']['schema']['properties']['a']['type'] === 'string'
                 && ! isset($body['stream']);
         });
         $this->assertSame('set_label', $response->toolCalls[0]->name);
-        $this->assertSame(['label' => 'bug'], $response->toolCalls[0]->arguments);
+        $this->assertSame(['label' => 'guide'], $response->toolCalls[0]->arguments);
         $this->assertSame(23, $response->usage->total());
         $this->assertSame('tool_calls', $response->finishReason);
     }

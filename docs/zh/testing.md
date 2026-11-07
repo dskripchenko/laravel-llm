@@ -12,15 +12,15 @@ use Dskripchenko\Llm\Testing\FakeResponse;
 use Dskripchenko\Llm\Testing\RecordedCall;
 
 // 列表：按顺序给出回答，适用于任何调用。用完后抛出异常。
-Llm::fake(['first answer', ['type' => 'bug', 'priority' => 2]]);
+Llm::fake(['first answer', ['type' => 'guide', 'level' => 2]]);
 
 // 映射：依次按场景、提示词键、用途匹配。值会被重复使用……
 Llm::fake([
-    'issue.classify' => ['type' => 'bug', 'priority' => 2],
+    'article.classify' => ['type' => 'guide', 'level' => 2],
     'summarize' => 'Short.',
     'wiki.answer' => fn (RecordedCall $call) => 'You asked: '.$call->text('user'),
     // ……除非它是一个序列
-    'issue.title' => Llm::sequence(['first', 'second'], whenEmpty: 'later'),
+    'article.title' => Llm::sequence(['first', 'second'], whenEmpty: 'later'),
 ]);
 // 未匹配的调用得到空文本（embed 得到确定性的向量，
 // rerank 得到原始顺序）。
@@ -47,8 +47,8 @@ Llm::fake([
 Llm::assertSentCount(2);
 Llm::assertNothingSent();
 Llm::assertPurpose('classify', 1);
-Llm::assertScenario('issue.classify');
-Llm::assertSent(fn (RecordedCall $c) => $c->contains('It crashes', 'user') && $c->model() === 'fake-model');
+Llm::assertScenario('article.classify');
+Llm::assertSent(fn (RecordedCall $c) => $c->contains('To reset a password, open Settings', 'user') && $c->model() === 'fake-model');
 Llm::assertNotSent(fn (RecordedCall $c) => $c->purpose()->value === 'embed');
 Llm::recorded();   // list<RecordedCall>: type, provider, request, purpose(), scenario(), promptKey(), messages(), text($role)
 ```
@@ -71,8 +71,8 @@ $test = new ProcessTest(container: new class(app()) implements \Dskripchenko\Pro
     public function get(string $class): object { return $this->app->make($class); }
 });
 
-Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2]]);
-$test->begin(IssueTriage::class, [...])->send('issue.created', [...])->assertIn('suggested');
+Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2]]);
+$test->begin(ArticleReview::class, [...])->send('article.published', [...])->assertIn('suggested');
 ```
 
 或者用 `->fake(RunLlm::class, returns: Send::to(...))` 把整个效果替换掉。

@@ -6,25 +6,25 @@
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class ClassifyIssue extends Prompt
+final class ClassifyArticle extends Prompt
 {
-    public function key(): string { return 'issue.classify'; }
+    public function key(): string { return 'article.classify'; }
 
     public function purpose(): Purpose { return Purpose::Classify; }
 
     public function system(): string
     {
-        return 'You triage issues of project {{ project }}.';
+        return 'You review the articles of knowledge base {{ base }}.';
     }
 
     public function user(): string
     {
-        return "Labels in use:\n{{ labels }}\n\nThe issue:\n{{ body }}";
+        return "Tags in use:\n{{ tags }}\n\nThe article:\n{{ body }}";
     }
 
     public function variables(): array
     {
-        return ['project' => 'string', 'labels' => '?list', 'body' => 'data'];
+        return ['base' => 'string', 'tags' => '?list', 'body' => 'data'];
     }
 
     public function schema(): array
@@ -32,10 +32,10 @@ final class ClassifyIssue extends Prompt
         return [
             'type' => 'object',
             'properties' => [
-                'type' => ['type' => 'string', 'enum' => ['bug', 'feature', 'question']],
-                'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+                'type' => ['type' => 'string', 'enum' => ['guide', 'reference', 'faq']],
+                'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             ],
-            'required' => ['type', 'priority'],
+            'required' => ['type', 'level'],
             'additionalProperties' => false,
         ];
     }
@@ -66,7 +66,7 @@ final class ClassifyIssue extends Prompt
 
 ## Текст пользователя — это данные, а не инструкции
 
-Всё, что написал пользователь, — описание задачи, комментарий, страница —
+Всё, что написал пользователь, — статья, комментарий, сообщение —
 должно быть переменной типа `data` или проходить через `->data($name, $text)`
 в запросе, собранном вручную. Такой текст оборачивается как
 
@@ -89,11 +89,11 @@ final class ClassifyIssue extends Prompt
 ```php
 $prompts = Llm::prompts();
 
-$prompts->override('issue.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, активна
-$prompts->override('issue.classify', user: "…", activate: false);   // v2, черновик
-$prompts->activate('issue.classify', 2);                            // v2 в работе
-$prompts->revert('issue.classify');                                  // назад к пресету в коде
-$prompts->versions('issue.classify');                                // история
+$prompts->override('article.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, активна
+$prompts->override('article.classify', user: "…", activate: false);   // v2, черновик
+$prompts->activate('article.classify', 2);                            // v2 в работе
+$prompts->revert('article.classify');                                  // назад к пресету в коде
+$prompts->versions('article.classify');                                // история
 ```
 
 Переопределение заменяет `system`, `user` и, если передана, `schema`;

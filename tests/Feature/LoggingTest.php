@@ -8,7 +8,7 @@ use Dskripchenko\Llm\CallStatus;
 use Dskripchenko\Llm\Facades\Llm;
 use Dskripchenko\Llm\Models\Call;
 use Dskripchenko\Llm\Purpose;
-use Dskripchenko\Llm\Tests\Fixtures\Issue;
+use Dskripchenko\Llm\Tests\Fixtures\Article;
 use Dskripchenko\Llm\Tests\TestCase;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Database\Schema\Blueprint;
@@ -20,22 +20,22 @@ final class LoggingTest extends TestCase
 {
     public function test_logs_metrics_bodies_and_the_subject(): void
     {
-        Schema::create('issues', function (Blueprint $t): void {
+        Schema::create('articles', function (Blueprint $t): void {
             $t->id();
             $t->string('title');
             $t->timestamps();
         });
-        $issue = Issue::query()->create(['title' => 'Crash']);
+        $article = Article::query()->create(['title' => 'Reset a password']);
         $this->route(Purpose::Summarize, $this->provider('local', 'http://local.test/v1'), 'qwen2.5:7b');
         Http::fake(['*' => Http::response(self::completion('Summary', 12, 3))]);
 
-        $result = Llm::request(Purpose::Summarize)->scenario('issue.digest')->about($issue)->user('Summarize')->data('body', 'secret body')->run();
+        $result = Llm::request(Purpose::Summarize)->scenario('article.digest')->about($article)->user('Summarize')->data('body', 'secret body')->run();
 
         $call = Call::query()->sole();
         $this->assertSame($result->callId, $call->id);
-        $this->assertSame(['issue.digest', Purpose::Summarize, 'local', 'qwen2.5:7b', 12, 3, 15, CallStatus::Ok],
+        $this->assertSame(['article.digest', Purpose::Summarize, 'local', 'qwen2.5:7b', 12, 3, 15, CallStatus::Ok],
             [$call->scenario, $call->purpose, $call->provider, $call->model, $call->prompt_tokens, $call->completion_tokens, $call->total_tokens, $call->status]);
-        $this->assertTrue($call->subject?->is($issue));
+        $this->assertTrue($call->subject?->is($article));
         $this->assertStringContainsString('secret body', (string) $call->request);
         $this->assertStringContainsString('Summary', (string) $call->response);
         $this->assertSame('Summary', $call->result['text'] ?? null);

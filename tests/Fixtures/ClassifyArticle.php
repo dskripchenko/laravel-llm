@@ -7,11 +7,11 @@ namespace Dskripchenko\Llm\Tests\Fixtures;
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class ClassifyIssue extends Prompt
+final class ClassifyArticle extends Prompt
 {
     public function key(): string
     {
-        return 'issue.classify';
+        return 'article.classify';
     }
 
     public function purpose(): Purpose
@@ -21,7 +21,7 @@ final class ClassifyIssue extends Prompt
 
     public function system(): string
     {
-        return 'Classify the issue.';
+        return 'Classify the article.';
     }
 
     public function user(): string
@@ -39,10 +39,10 @@ final class ClassifyIssue extends Prompt
         return [
             'type' => 'object',
             'properties' => [
-                'type' => ['type' => 'string', 'enum' => ['bug', 'feature', 'question']],
-                'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+                'type' => ['type' => 'string', 'enum' => ['guide', 'reference', 'faq']],
+                'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             ],
-            'required' => ['type', 'priority'],
+            'required' => ['type', 'level'],
             'additionalProperties' => false,
         ];
     }

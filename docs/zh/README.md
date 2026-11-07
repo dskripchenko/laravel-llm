@@ -46,16 +46,16 @@ Route::create(['purpose' => 'summarize', 'provider_id' => $gpu->id, 'model' => '
 use Dskripchenko\Llm\Facades\Llm;
 
 // 使用预设（见 docs/zh/prompts-and-schemas.md）
-$result = Llm::prompt(ClassifyIssue::class, ['body' => $issue->description])
-    ->about($issue)              // 作为调用的主体记录到日志
+$result = Llm::prompt(ClassifyArticle::class, ['body' => $article->description])
+    ->about($article)              // 作为调用的主体记录到日志
     ->run();
-$result->data;                   // ['type' => 'bug', 'priority' => 2]，已校验
+$result->data;                   // ['type' => 'guide', 'level' => 2]，已校验
 
 // 手动构建
 $result = Llm::request('summarize')
-    ->system('Summarize the issue in two sentences.')
-    ->user('Issue:')
-    ->data('issue', $issue->description)     // 不可信文本 → 数据块
+    ->system('Summarize the article in two sentences.')
+    ->user('Article:')
+    ->data('article', $article->description)     // 不可信文本 → 数据块
     ->stream(function (string $delta): void { echo $delta; });
 
 Llm::embed(['first text', 'second text'])->vectors;
@@ -65,12 +65,12 @@ Llm::rerank('query', $documents)->order();
 ## 测试
 
 ```php
-Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2], 'summarize' => 'Short.']);
+Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2], 'summarize' => 'Short.']);
 
 // … 运行你的代码 …
 
 Llm::assertPurpose('classify', 1);
-Llm::assertSent(fn ($call) => $call->contains('It crashes', 'user'));
+Llm::assertSent(fn ($call) => $call->contains('To reset a password, open Settings', 'user'));
 ```
 
 ## 文档

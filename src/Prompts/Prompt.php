@@ -22,12 +22,12 @@ use Dskripchenko\Llm\Purpose;
  * | `data`   | a delimited block of untrusted user text (see Data) |
  *
  * A `?` prefix (`?string`) makes a variable optional (null or absent → empty).
- * Anything a user typed — an issue description, a comment, a page — must be
+ * Anything a user typed — an article, a comment, a message — must be
  * `data`, never `string`.
  */
 abstract class Prompt
 {
-    /** A stable key, e.g. `issue.summary`. Overrides are stored under it. */
+    /** A stable key, e.g. `article.summary`. Overrides are stored under it. */
     abstract public function key(): string;
 
     /** The user message template. */
