@@ -28,7 +28,7 @@ final class StreamingTest extends TestCase
     {
         Http::fake([
             'gpu.local/*' => Http::response('busy', 503),
-            'cpu.local/*' => Http::response(self::sse('Sprint ', 'is ', 'late.'), 200, ['Content-Type' => 'text/event-stream']),
+            'cpu.local/*' => Http::response(self::sse('Draft ', 'is ', 'ready.'), 200, ['Content-Type' => 'text/event-stream']),
         ]);
         $fallback = $this->route(Purpose::Chat, $this->provider('cpu', 'http://cpu.local/v1'), 'small');
         $this->route(Purpose::Chat, $this->provider('gpu', 'http://gpu.local/v1'), 'big', $fallback);
@@ -38,8 +38,8 @@ final class StreamingTest extends TestCase
             $deltas[] = $d;
         });
 
-        $this->assertSame(['Sprint ', 'is ', 'late.'], $deltas);
-        $this->assertSame('Sprint is late.', $result->text);
+        $this->assertSame(['Draft ', 'is ', 'ready.'], $deltas);
+        $this->assertSame('Draft is ready.', $result->text);
         $this->assertSame('cpu', $result->provider);
         $this->assertSame(12, $result->usage->total());
         $ok = Call::query()->where('status', CallStatus::Ok->value)->sole();

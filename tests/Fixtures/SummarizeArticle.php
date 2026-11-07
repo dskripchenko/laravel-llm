@@ -7,11 +7,11 @@ namespace Dskripchenko\Llm\Tests\Fixtures;
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class SummarizeIssue extends Prompt
+final class SummarizeArticle extends Prompt
 {
     public function key(): string
     {
-        return 'issue.summary';
+        return 'article.summary';
     }
 
     public function purpose(): Purpose
@@ -21,17 +21,17 @@ final class SummarizeIssue extends Prompt
 
     public function system(): string
     {
-        return 'You summarize issues of project {{ project }} in at most {{ words }} words.';
+        return 'You summarize articles of knowledge base {{ base }} in at most {{ words }} words.';
     }
 
     public function user(): string
     {
-        return "Title: {{ title }}\nLabels:\n{{ labels }}\n\n{{ body }}";
+        return "Title: {{ title }}\nTags:\n{{ tags }}\n\n{{ body }}";
     }
 
     public function variables(): array
     {
-        return ['project' => 'string', 'words' => 'int', 'title' => 'string', 'labels' => '?list', 'body' => 'data'];
+        return ['base' => 'string', 'words' => 'int', 'title' => 'string', 'tags' => '?list', 'body' => 'data'];
     }
 
     public function options(): array

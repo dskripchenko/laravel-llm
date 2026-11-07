@@ -14,15 +14,15 @@ use Dskripchenko\Llm\Testing\FakeResponse;
 use Dskripchenko\Llm\Testing\RecordedCall;
 
 // A list: answers in order, for any call. Running out throws.
-Llm::fake(['first answer', ['type' => 'bug', 'priority' => 2]]);
+Llm::fake(['first answer', ['type' => 'guide', 'level' => 2]]);
 
 // A map: by scenario, then prompt key, then purpose. A value is reused…
 Llm::fake([
-    'issue.classify' => ['type' => 'bug', 'priority' => 2],
+    'article.classify' => ['type' => 'guide', 'level' => 2],
     'summarize' => 'Short.',
     'wiki.answer' => fn (RecordedCall $call) => 'You asked: '.$call->text('user'),
     // …unless it is a sequence
-    'issue.title' => Llm::sequence(['first', 'second'], whenEmpty: 'later'),
+    'article.title' => Llm::sequence(['first', 'second'], whenEmpty: 'later'),
 ]);
 // Unmatched calls get an empty text (and deterministic vectors for embed,
 // the identity order for rerank).
@@ -50,8 +50,8 @@ so quotas behave.
 Llm::assertSentCount(2);
 Llm::assertNothingSent();
 Llm::assertPurpose('classify', 1);
-Llm::assertScenario('issue.classify');
-Llm::assertSent(fn (RecordedCall $c) => $c->contains('It crashes', 'user') && $c->model() === 'fake-model');
+Llm::assertScenario('article.classify');
+Llm::assertSent(fn (RecordedCall $c) => $c->contains('To reset a password, open Settings', 'user') && $c->model() === 'fake-model');
 Llm::assertNotSent(fn (RecordedCall $c) => $c->purpose()->value === 'embed');
 Llm::recorded();   // list<RecordedCall>: type, provider, request, purpose(), scenario(), promptKey(), messages(), text($role)
 ```
@@ -75,8 +75,8 @@ $test = new ProcessTest(container: new class(app()) implements \Dskripchenko\Pro
     public function get(string $class): object { return $this->app->make($class); }
 });
 
-Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2]]);
-$test->begin(IssueTriage::class, [...])->send('issue.created', [...])->assertIn('suggested');
+Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2]]);
+$test->begin(ArticleReview::class, [...])->send('article.published', [...])->assertIn('suggested');
 ```
 
 Or fake the effect away with `->fake(RunLlm::class, returns: Send::to(...))`.

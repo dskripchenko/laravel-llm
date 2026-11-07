@@ -15,8 +15,8 @@
 
 ### Cloud-Anbieter
 
-> **Warnung.** Ein Prompt enthält die Daten des Mandanten — Issue-Texte,
-> Seiten, Kommentare. Werden sie an eine Cloud-API gesendet, verlassen diese
+> **Warnung.** Ein Prompt enthält die Daten des Mandanten — Artikel,
+> Kommentare, Nachrichten. Werden sie an eine Cloud-API gesendet, verlassen diese
 > Daten die Infrastruktur des Mandanten. Das Paket leitet deshalb nie an einen
 > Anbieter mit `is_cloud = true` weiter, solange nicht auch
 > `cloud_enabled = true` gesetzt ist. `cloud_enabled` nur Administratoren

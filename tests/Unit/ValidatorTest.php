@@ -14,19 +14,19 @@ final class ValidatorTest extends TestCase
     private const SCHEMA = [
         'type' => 'object',
         'properties' => [
-            'type' => ['type' => 'string', 'enum' => ['bug', 'feature']],
-            'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+            'type' => ['type' => 'string', 'enum' => ['guide', 'reference']],
+            'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             'title' => ['type' => 'string', 'minLength' => 3, 'maxLength' => 10],
             'score' => ['type' => 'number'],
-            'labels' => ['type' => 'array', 'items' => ['type' => 'string', 'maxLength' => 5], 'maxItems' => 2],
-            'assignee' => ['type' => ['string', 'null']],
+            'tags' => ['type' => 'array', 'items' => ['type' => 'string', 'maxLength' => 5], 'maxItems' => 2],
+            'author' => ['type' => ['string', 'null']],
             'meta' => [
                 'type' => 'object',
                 'properties' => ['ok' => ['type' => 'boolean']],
                 'required' => ['ok'],
             ],
         ],
-        'required' => ['type', 'priority'],
+        'required' => ['type', 'level'],
         'additionalProperties' => false,
     ];
 
@@ -35,21 +35,21 @@ final class ValidatorTest extends TestCase
      */
     public static function cases(): iterable
     {
-        yield 'valid' => ['{"type":"bug","priority":2,"title":"Crash","score":0.5,"labels":["ui"],"assignee":null,"meta":{"ok":true}}', []];
-        yield 'integer as 2.0 is an integer' => ['{"type":"bug","priority":2.0}', []];
-        yield 'missing required' => ['{"type":"bug"}', ['$: missing required property `priority`']];
-        yield 'enum' => ['{"type":"chore","priority":1}', ['$.type: must be one of "bug", "feature", got "chore"']];
-        yield 'type' => ['{"type":"bug","priority":"high"}', ['$.priority: expected integer, got string']];
-        yield 'minimum' => ['{"type":"bug","priority":0}', ['$.priority: must be >= 1']];
-        yield 'maximum' => ['{"type":"bug","priority":9}', ['$.priority: must be <= 4']];
-        yield 'minLength' => ['{"type":"bug","priority":1,"title":"ab"}', ['$.title: must be at least 3 characters long']];
-        yield 'maxLength counts characters' => ['{"type":"bug","priority":1,"title":"длинноеимяя"}', ['$.title: must be at most 10 characters long']];
-        yield 'items' => ['{"type":"bug","priority":1,"labels":["ui",7]}', ['$.labels[1]: expected string, got integer']];
-        yield 'maxItems' => ['{"type":"bug","priority":1,"labels":["a","b","c"]}', ['$.labels: must have at most 2 item(s)']];
-        yield 'nullable union' => ['{"type":"bug","priority":1,"assignee":5}', ['$.assignee: expected string or null, got integer']];
-        yield 'nested required' => ['{"type":"bug","priority":1,"meta":{}}', ['$.meta: missing required property `ok`']];
-        yield 'empty object is not an array' => ['{"type":"bug","priority":1,"labels":{}}', ['$.labels: expected array, got object']];
-        yield 'additional property' => ['{"type":"bug","priority":1,"extra":1}', ['$: unexpected property `extra`']];
+        yield 'valid' => ['{"type":"guide","level":2,"title":"Setup","score":0.5,"tags":["ui"],"author":null,"meta":{"ok":true}}', []];
+        yield 'integer as 2.0 is an integer' => ['{"type":"guide","level":2.0}', []];
+        yield 'missing required' => ['{"type":"guide"}', ['$: missing required property `level`']];
+        yield 'enum' => ['{"type":"poem","level":1}', ['$.type: must be one of "guide", "reference", got "poem"']];
+        yield 'type' => ['{"type":"guide","level":"high"}', ['$.level: expected integer, got string']];
+        yield 'minimum' => ['{"type":"guide","level":0}', ['$.level: must be >= 1']];
+        yield 'maximum' => ['{"type":"guide","level":9}', ['$.level: must be <= 4']];
+        yield 'minLength' => ['{"type":"guide","level":1,"title":"ab"}', ['$.title: must be at least 3 characters long']];
+        yield 'maxLength counts characters' => ['{"type":"guide","level":1,"title":"длинноеимяя"}', ['$.title: must be at most 10 characters long']];
+        yield 'items' => ['{"type":"guide","level":1,"tags":["ui",7]}', ['$.tags[1]: expected string, got integer']];
+        yield 'maxItems' => ['{"type":"guide","level":1,"tags":["a","b","c"]}', ['$.tags: must have at most 2 item(s)']];
+        yield 'nullable union' => ['{"type":"guide","level":1,"author":5}', ['$.author: expected string or null, got integer']];
+        yield 'nested required' => ['{"type":"guide","level":1,"meta":{}}', ['$.meta: missing required property `ok`']];
+        yield 'empty object is not an array' => ['{"type":"guide","level":1,"tags":{}}', ['$.tags: expected array, got object']];
+        yield 'additional property' => ['{"type":"guide","level":1,"extra":1}', ['$: unexpected property `extra`']];
         yield 'root type' => ['[1,2]', ['$: expected object, got array']];
     }
 

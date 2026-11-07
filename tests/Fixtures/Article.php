@@ -6,9 +6,9 @@ namespace Dskripchenko\Llm\Tests\Fixtures;
 
 use Illuminate\Database\Eloquent\Model;
 
-final class Issue extends Model
+final class Article extends Model
 {
-    protected $table = 'issues';
+    protected $table = 'articles';
 
     protected $guarded = [];
 }

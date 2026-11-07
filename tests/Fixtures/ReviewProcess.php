@@ -10,7 +10,7 @@ use Dskripchenko\Llm\ProcessEngine\RunLlm;
 use Dskripchenko\ProcessEngine\Builder\Builder;
 use Dskripchenko\ProcessEngine\Process;
 
-final class TriageProcess extends Process
+final class ReviewProcess extends Process
 {
     public const VERSION = 1;
 
@@ -39,10 +39,10 @@ final class TriageProcess extends Process
      */
     private function prepare(array &$context): void
     {
-        $context['llm'] = LlmRun::prompt('issue.classify', ['body' => $context['body']])
-            ->about('issue', (int) $context['issueId'])
+        $context['llm'] = LlmRun::prompt('article.classify', ['body' => $context['body']])
+            ->about('article', (int) $context['articleId'])
             ->mode(Mode::Suggest)
-            ->tag('triage')
+            ->tag('review')
             ->toArray();
     }
 

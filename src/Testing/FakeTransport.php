@@ -23,7 +23,7 @@ use PHPUnit\Framework\Assert as PHPUnit;
  * log all run for real on top of it.
  *
  * - A list (`[r1, r2]`) is consumed in order by every call.
- * - A map (`['issue.summary' => r, 'classify' => r2]`) answers by scenario,
+ * - A map (`['article.summary' => r, 'classify' => r2]`) answers by scenario,
  *   then prompt key, then purpose; a value is reused for every match unless
  *   it is a FakeSequence. Unmatched calls get an empty text answer (and
  *   deterministic vectors / an identity ranking for embed / rerank).

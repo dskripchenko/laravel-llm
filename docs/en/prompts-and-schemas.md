@@ -6,25 +6,25 @@
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class ClassifyIssue extends Prompt
+final class ClassifyArticle extends Prompt
 {
-    public function key(): string { return 'issue.classify'; }
+    public function key(): string { return 'article.classify'; }
 
     public function purpose(): Purpose { return Purpose::Classify; }
 
     public function system(): string
     {
-        return 'You triage issues of project {{ project }}.';
+        return 'You review the articles of knowledge base {{ base }}.';
     }
 
     public function user(): string
     {
-        return "Labels in use:\n{{ labels }}\n\nThe issue:\n{{ body }}";
+        return "Tags in use:\n{{ tags }}\n\nThe article:\n{{ body }}";
     }
 
     public function variables(): array
     {
-        return ['project' => 'string', 'labels' => '?list', 'body' => 'data'];
+        return ['base' => 'string', 'tags' => '?list', 'body' => 'data'];
     }
 
     public function schema(): array
@@ -32,10 +32,10 @@ final class ClassifyIssue extends Prompt
         return [
             'type' => 'object',
             'properties' => [
-                'type' => ['type' => 'string', 'enum' => ['bug', 'feature', 'question']],
-                'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+                'type' => ['type' => 'string', 'enum' => ['guide', 'reference', 'faq']],
+                'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             ],
-            'required' => ['type', 'priority'],
+            'required' => ['type', 'level'],
             'additionalProperties' => false,
         ];
     }
@@ -65,7 +65,7 @@ problem at once) before anything is sent.
 
 ## User text is data, not instructions
 
-Anything a user wrote — an issue description, a comment, a page — must be a
+Anything a user wrote — an article, a comment, a message — must be a
 `data` variable, or go through `->data($name, $text)` of a hand-built
 request. It is wrapped as
 
@@ -88,11 +88,11 @@ anything that changes data (see [process-engine](process-engine.md)).
 ```php
 $prompts = Llm::prompts();
 
-$prompts->override('issue.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, active
-$prompts->override('issue.classify', user: "…", activate: false);   // v2, a draft
-$prompts->activate('issue.classify', 2);                            // v2 is live
-$prompts->revert('issue.classify');                                  // back to the preset in code
-$prompts->versions('issue.classify');                                // history
+$prompts->override('article.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, active
+$prompts->override('article.classify', user: "…", activate: false);   // v2, a draft
+$prompts->activate('article.classify', 2);                            // v2 is live
+$prompts->revert('article.classify');                                  // back to the preset in code
+$prompts->versions('article.classify');                                // history
 ```
 
 An override replaces `system`, `user` and, when given, `schema`; variables,

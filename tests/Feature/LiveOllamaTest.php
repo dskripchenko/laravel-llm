@@ -42,14 +42,14 @@ final class LiveOllamaTest extends TestCase
         $this->route(Purpose::Classify, $this->provider('ollama', $base.'/v1', ['limits' => ['timeout' => 180]]), (string) $models[0]['name']);
 
         $result = Llm::request(Purpose::Classify)
-            ->system('You triage issues of a task tracker.')
-            ->user('Is this issue a bug or a feature request?')
-            ->data('issue', 'The app crashes when I open the settings page.')
-            ->schema(['type' => 'object', 'properties' => ['type' => ['type' => 'string', 'enum' => ['bug', 'feature']]], 'required' => ['type']])
+            ->system('You sort the articles of a knowledge base.')
+            ->user('Is this article a step-by-step guide or reference material?')
+            ->data('article', 'To reset a password, open Settings, choose Security and press Reset.')
+            ->schema(['type' => 'object', 'properties' => ['type' => ['type' => 'string', 'enum' => ['guide', 'reference']]], 'required' => ['type']])
             ->temperature(0)
             ->run();
 
-        $this->assertContains($result->data['type'] ?? null, ['bug', 'feature']);
+        $this->assertContains($result->data['type'] ?? null, ['guide', 'reference']);
         $this->assertGreaterThan(0, $result->usage->total());
     }
 

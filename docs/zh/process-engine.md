@@ -22,14 +22,14 @@ use Dskripchenko\Llm\Mode;
 use Dskripchenko\Llm\ProcessEngine\LlmRun;
 use Dskripchenko\Llm\ProcessEngine\RunLlm;
 
-final class IssueTriage extends Process
+final class ArticleReview extends Process
 {
     public const VERSION = 1;
 
     public function define(Builder $p): void
     {
         $p->state('new', fn (Builder $s) => $s
-            ->on('issue.created', to: 'classifying', run: $this->prepare(...)));
+            ->on('article.published', to: 'classifying', run: $this->prepare(...)));
 
         $p->state('classifying', fn (Builder $s) => $s
             ->entry(RunLlm::class)                                   // 读取 $context['llm']
@@ -40,10 +40,10 @@ final class IssueTriage extends Process
 
     private function prepare(array &$context, array $event): void
     {
-        $context['llm'] = LlmRun::prompt('issue.classify', ['body' => $event['description']])
-            ->about('issue', $event['issueId'])
+        $context['llm'] = LlmRun::prompt('article.classify', ['body' => $event['body']])
+            ->about('article', $event['articleId'])
             ->mode(Mode::Suggest)
-            ->tag('triage')
+            ->tag('review')
             ->toArray();
     }
 

@@ -12,8 +12,8 @@ use Dskripchenko\Llm\ProcessEngine\LlmRun;
 use Dskripchenko\Llm\ProcessEngine\RunLlm;
 use Dskripchenko\Llm\Purpose;
 use Dskripchenko\Llm\Testing\FakeResponse;
-use Dskripchenko\Llm\Tests\Fixtures\ClassifyIssue;
-use Dskripchenko\Llm\Tests\Fixtures\TriageProcess;
+use Dskripchenko\Llm\Tests\Fixtures\ClassifyArticle;
+use Dskripchenko\Llm\Tests\Fixtures\ReviewProcess;
 use Dskripchenko\Llm\Tests\TestCase;
 use Dskripchenko\ProcessEngine\Attributes\Idempotent;
 use Dskripchenko\ProcessEngine\Effect\Effect;
@@ -33,7 +33,7 @@ final class RunLlmEffectTest extends TestCase
     protected function defineEnvironment($app): void
     {
         parent::defineEnvironment($app);
-        $app['config']->set('llm.prompts.presets', [ClassifyIssue::class]);
+        $app['config']->set('llm.prompts.presets', [ClassifyArticle::class]);
     }
 
     private function engine(): ProcessTest
@@ -62,19 +62,19 @@ final class RunLlmEffectTest extends TestCase
 
     public function test_the_process_receives_llm_done_with_the_result(): void
     {
-        Llm::fake(['issue.classify' => ['type' => 'bug', 'priority' => 2]]);
+        Llm::fake(['article.classify' => ['type' => 'guide', 'level' => 2]]);
 
-        $t = $this->engine()->begin(TriageProcess::class, ['issueId' => 42, 'body' => 'It crashes']);
+        $t = $this->engine()->begin(ReviewProcess::class, ['articleId' => 42, 'body' => 'To reset a password, open Settings']);
         $t->send('classify')
             ->assertIn('review')
-            ->assertContext('suggestion.type', 'bug')
-            ->assertContext('suggestion.priority', 2)
+            ->assertContext('suggestion.type', 'guide')
+            ->assertContext('suggestion.level', 2)
             ->assertContext('mode', 'suggest')
-            ->assertContext('tag', 'triage')
+            ->assertContext('tag', 'review')
             ->assertNoIncidents();
 
         $call = Call::query()->sole();
-        $this->assertSame(['issue', '42'], [$call->subject_type, (string) $call->subject_id]);
+        $this->assertSame(['article', '42'], [$call->subject_type, (string) $call->subject_id]);
         $this->assertStringStartsWith($t->id().'/step', (string) $call->idempotency_key);
         Llm::assertSentCount(1);
     }
@@ -83,8 +83,8 @@ final class RunLlmEffectTest extends TestCase
     {
         Llm::fake(['summarize' => 'Short.']);
 
-        $this->engine()->begin(TriageProcess::class, ['issueId' => 1, 'body' => 'b'])
-            ->send('ask', LlmRun::ask(Purpose::Summarize, 'Summarize the issue', 'b')->mode(Mode::Apply)->toArray())
+        $this->engine()->begin(ReviewProcess::class, ['articleId' => 1, 'body' => 'b'])
+            ->send('ask', LlmRun::ask(Purpose::Summarize, 'Summarize the article', 'b')->mode(Mode::Apply)->toArray())
             ->assertIn('answered')
             ->assertContext('answer', 'Short.')
             ->assertContext('mode', 'apply');
@@ -92,9 +92,9 @@ final class RunLlmEffectTest extends TestCase
 
     public function test_a_non_transient_failure_is_sent_as_llm_failed(): void
     {
-        Llm::fake(['issue.classify' => 'definitely not json']);
+        Llm::fake(['article.classify' => 'definitely not json']);
 
-        $this->engine()->begin(TriageProcess::class, ['issueId' => 42, 'body' => 'b'])
+        $this->engine()->begin(ReviewProcess::class, ['articleId' => 42, 'body' => 'b'])
             ->send('classify')
             ->assertIn('manual')
             ->assertContext('error', 'invalid_output')
@@ -104,17 +104,17 @@ final class RunLlmEffectTest extends TestCase
 
     public function test_a_transient_failure_is_retried_by_the_engine_then_reported(): void
     {
-        $fake = Llm::fake([FakeResponse::unavailable(), FakeResponse::unavailable(), ['type' => 'feature', 'priority' => 1]]);
+        $fake = Llm::fake([FakeResponse::unavailable(), FakeResponse::unavailable(), ['type' => 'reference', 'level' => 1]]);
 
-        $t = $this->engine()->begin(TriageProcess::class, ['issueId' => 42, 'body' => 'b'])->send('classify');
+        $t = $this->engine()->begin(ReviewProcess::class, ['articleId' => 42, 'body' => 'b'])->send('classify');
         $t->assertIn('classifying');
         $t->travel('1 hour', step: '1 minute')
             ->assertIn('review')
-            ->assertContext('suggestion.type', 'feature');
+            ->assertContext('suggestion.type', 'reference');
         $this->assertCount(3, $fake->recorded());
 
         Llm::fake(array_fill(0, 3, FakeResponse::unavailable()));
-        $this->engine()->begin(TriageProcess::class, ['issueId' => 43, 'body' => 'b'])
+        $this->engine()->begin(ReviewProcess::class, ['articleId' => 43, 'body' => 'b'])
             ->send('classify')
             ->travel('1 hour', step: '1 minute')
             ->assertIn('manual')
@@ -124,10 +124,10 @@ final class RunLlmEffectTest extends TestCase
 
     public function test_a_repeated_attempt_with_the_same_key_replays_instead_of_calling_again(): void
     {
-        Llm::fake([['type' => 'bug', 'priority' => 4]]);
+        Llm::fake([['type' => 'guide', 'level' => 4]]);
         $handler = $this->app->make(RunLlm::class);
-        $fx = fn (int $attempt) => new Effect(key: 'inst-1/step3/triage.entry.RunLlm#0', instanceId: 'inst-1', attempt: $attempt, now: new DateTimeImmutable);
-        $request = ['llm' => LlmRun::prompt('issue.classify', ['body' => 'x'])->tag('t1')->toArray()];
+        $fx = fn (int $attempt) => new Effect(key: 'inst-1/step3/review.entry.RunLlm#0', instanceId: 'inst-1', attempt: $attempt, now: new DateTimeImmutable);
+        $request = ['llm' => LlmRun::prompt('article.classify', ['body' => 'x'])->tag('t1')->toArray()];
 
         $first = $handler($fx(1), $request);
         $second = $handler($fx(2), $request);

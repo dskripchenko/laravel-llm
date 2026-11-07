@@ -6,25 +6,25 @@
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class ClassifyIssue extends Prompt
+final class ClassifyArticle extends Prompt
 {
-    public function key(): string { return 'issue.classify'; }
+    public function key(): string { return 'article.classify'; }
 
     public function purpose(): Purpose { return Purpose::Classify; }
 
     public function system(): string
     {
-        return 'You triage issues of project {{ project }}.';
+        return 'You review the articles of knowledge base {{ base }}.';
     }
 
     public function user(): string
     {
-        return "Labels in use:\n{{ labels }}\n\nThe issue:\n{{ body }}";
+        return "Tags in use:\n{{ tags }}\n\nThe article:\n{{ body }}";
     }
 
     public function variables(): array
     {
-        return ['project' => 'string', 'labels' => '?list', 'body' => 'data'];
+        return ['base' => 'string', 'tags' => '?list', 'body' => 'data'];
     }
 
     public function schema(): array
@@ -32,10 +32,10 @@ final class ClassifyIssue extends Prompt
         return [
             'type' => 'object',
             'properties' => [
-                'type' => ['type' => 'string', 'enum' => ['bug', 'feature', 'question']],
-                'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+                'type' => ['type' => 'string', 'enum' => ['guide', 'reference', 'faq']],
+                'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             ],
-            'required' => ['type', 'priority'],
+            'required' => ['type', 'level'],
             'additionalProperties' => false,
         ];
     }
@@ -63,7 +63,7 @@ final class ClassifyIssue extends Prompt
 
 ## 用户文本是数据，不是指令
 
-用户写下的任何内容——问题描述、评论、页面——都必须是 `data` 变量，或在手动构建的请求中通过
+用户写下的任何内容——文章、评论、消息——都必须是 `data` 变量，或在手动构建的请求中通过
 `->data($name, $text)` 传入。它会被包裹为
 
 ```
@@ -82,11 +82,11 @@ system 消息中会加入一条指令：数据块是要处理的不可信材料�
 ```php
 $prompts = Llm::prompts();
 
-$prompts->override('issue.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1，生效中
-$prompts->override('issue.classify', user: "…", activate: false);   // v2，草稿
-$prompts->activate('issue.classify', 2);                            // v2 生效
-$prompts->revert('issue.classify');                                  // 回到代码中的预设
-$prompts->versions('issue.classify');                                // 历史
+$prompts->override('article.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1，生效中
+$prompts->override('article.classify', user: "…", activate: false);   // v2，草稿
+$prompts->activate('article.classify', 2);                            // v2 生效
+$prompts->revert('article.classify');                                  // 回到代码中的预设
+$prompts->versions('article.classify');                                // 历史
 ```
 
 覆盖会替换 `system`、`user`，以及（如果提供的话）`schema`；变量、用途和选项仍沿用预设的。

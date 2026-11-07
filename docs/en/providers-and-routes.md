@@ -15,8 +15,8 @@
 
 ### Cloud providers
 
-> **Warning.** A prompt contains the tenant's data — issue texts, pages,
-> comments. Sending it to a cloud API moves that data out of the tenant's
+> **Warning.** A prompt contains the tenant's data — articles, comments,
+> messages. Sending it to a cloud API moves that data out of the tenant's
 > infrastructure. The package therefore never routes to a provider with
 > `is_cloud = true` unless `cloud_enabled = true` as well. Expose
 > `cloud_enabled` only to administrators who may make that decision, and

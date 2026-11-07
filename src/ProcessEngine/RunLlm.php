@@ -21,7 +21,7 @@ use InvalidArgumentException;
  * Use it as an action (`run:` of a transition or `entry()` of a state),
  * so that the outcome arrives as these events:
  *
- *     $p->state('triage', fn (Builder $s) => $s
+ *     $p->state('review', fn (Builder $s) => $s
  *         ->entry(RunLlm::class)                      // reads $context['llm']
  *         ->on(RunLlm::DONE, to: 'review', run: $this->keepSuggestion(...))
  *         ->on(RunLlm::FAILED, to: 'manual'));

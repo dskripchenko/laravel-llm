@@ -6,25 +6,25 @@
 use Dskripchenko\Llm\Prompts\Prompt;
 use Dskripchenko\Llm\Purpose;
 
-final class ClassifyIssue extends Prompt
+final class ClassifyArticle extends Prompt
 {
-    public function key(): string { return 'issue.classify'; }
+    public function key(): string { return 'article.classify'; }
 
     public function purpose(): Purpose { return Purpose::Classify; }
 
     public function system(): string
     {
-        return 'You triage issues of project {{ project }}.';
+        return 'You review the articles of knowledge base {{ base }}.';
     }
 
     public function user(): string
     {
-        return "Labels in use:\n{{ labels }}\n\nThe issue:\n{{ body }}";
+        return "Tags in use:\n{{ tags }}\n\nThe article:\n{{ body }}";
     }
 
     public function variables(): array
     {
-        return ['project' => 'string', 'labels' => '?list', 'body' => 'data'];
+        return ['base' => 'string', 'tags' => '?list', 'body' => 'data'];
     }
 
     public function schema(): array
@@ -32,10 +32,10 @@ final class ClassifyIssue extends Prompt
         return [
             'type' => 'object',
             'properties' => [
-                'type' => ['type' => 'string', 'enum' => ['bug', 'feature', 'question']],
-                'priority' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
+                'type' => ['type' => 'string', 'enum' => ['guide', 'reference', 'faq']],
+                'level' => ['type' => 'integer', 'minimum' => 1, 'maximum' => 4],
             ],
-            'required' => ['type', 'priority'],
+            'required' => ['type', 'level'],
             'additionalProperties' => false,
         ];
     }
@@ -67,8 +67,8 @@ wird.
 
 ## Benutzertext ist Daten, keine Anweisung
 
-Alles, was ein Benutzer geschrieben hat — eine Issue-Beschreibung, ein
-Kommentar, eine Seite —, muss eine `data`-Variable sein oder bei einer von
+Alles, was ein Benutzer geschrieben hat — ein Artikel, ein Kommentar,
+eine Nachricht —, muss eine `data`-Variable sein oder bei einer von
 Hand gebauten Anfrage über `->data($name, $text)` laufen. Es wird so
 eingeschlossen:
 
@@ -93,11 +93,11 @@ was Daten ändert, die Modi `suggest` / `approve` verwenden (siehe
 ```php
 $prompts = Llm::prompts();
 
-$prompts->override('issue.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, aktiv
-$prompts->override('issue.classify', user: "…", activate: false);   // v2, ein Entwurf
-$prompts->activate('issue.classify', 2);                            // v2 ist live
-$prompts->revert('issue.classify');                                  // zurück zum Preset im Code
-$prompts->versions('issue.classify');                                // Verlauf
+$prompts->override('article.classify', user: "{{ body }}", system: 'Be strict.', note: 'stricter');  // v1, aktiv
+$prompts->override('article.classify', user: "…", activate: false);   // v2, ein Entwurf
+$prompts->activate('article.classify', 2);                            // v2 ist live
+$prompts->revert('article.classify');                                  // zurück zum Preset im Code
+$prompts->versions('article.classify');                                // Verlauf
 ```
 
 Ein Override ersetzt `system`, `user` und, falls angegeben, `schema`;
