@@ -17,6 +17,12 @@ final class CallLogger
 {
     public function __construct(private readonly Config $config) {}
 
+    /** Whether prompts, responses and results are kept; false — metrics only (`llm.log.bodies`). */
+    public function keepsBodies(): bool
+    {
+        return filter_var($this->config->get('llm.log.bodies', true), FILTER_VALIDATE_BOOLEAN);
+    }
+
     /**
      * @param  array<string, mixed>|null  $result
      */
@@ -35,6 +41,7 @@ final class CallLogger
         if (! $this->config->get('llm.log.enabled', true)) {
             return null;
         }
+        $bodies = $this->keepsBodies();
 
         return Call::query()->create([
             'scenario' => $context->meta->scenario,
@@ -56,9 +63,10 @@ final class CallLogger
             'tenant_key' => $context->quota->tenantKey,
             'project_key' => $context->quota->projectKey,
             'idempotency_key' => $context->idempotencyKey,
-            'request' => $request,
-            'response' => $response,
-            'result' => $result,
+            'request' => $bodies ? $request : null,
+            'response' => $bodies ? $response : null,
+            'result' => $bodies ? $result : null,
+            'bodies_pruned_at' => $bodies ? null : now(),
         ]);
     }
 }

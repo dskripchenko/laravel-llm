@@ -4,6 +4,13 @@ All notable changes to this project are documented in this file. The
 format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the
 project adheres to [Semantic Versioning](https://semver.org/).
 
+## [0.2.0] - 2026-11-11
+
+### Added
+
+- `llm.log.bodies` (`LLM_LOG_BODIES`): false keeps no prompt, response or
+  result in the call log — only metrics, the subject and the status.
+
 ## [0.1.0] - 2026-11-07
 
 ### Added

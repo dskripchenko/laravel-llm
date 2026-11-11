@@ -38,10 +38,13 @@ return [
     /*
     | The call log. Prompt and response bodies are kept for `keep_bodies_days`
     | and then pruned to metrics by `llm:prune`. With `schedule_prune` the
-    | package schedules `llm:prune` daily itself.
+    | package schedules `llm:prune` daily itself. `bodies` false keeps no
+    | bodies at all: only metrics, the subject and the status — for an
+    | application whose prompts carry what must not be stored.
     */
     'log' => [
         'enabled' => true,
+        'bodies' => env('LLM_LOG_BODIES', true),
         'keep_bodies_days' => env('LLM_KEEP_BODIES_DAYS', 30),
         'schedule_prune' => true,
     ],
