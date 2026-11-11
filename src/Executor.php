@@ -125,7 +125,9 @@ final class Executor
                 $this->body($sent, $onDelta !== null), $response->raw !== '' ? $response->raw : $content, $result->toArray());
             if ($call !== null) {
                 $result = LlmResult::fromArray(['call_id' => $call->id] + $result->toArray());
-                $call->forceFill(['result' => $result->toArray()])->save();
+                if ($this->logger->keepsBodies()) {
+                    $call->forceFill(['result' => $result->toArray()])->save();
+                }
             }
 
             return $result;

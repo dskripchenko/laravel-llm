@@ -42,6 +42,21 @@ final class LoggingTest extends TestCase
         $this->assertGreaterThanOrEqual(0, $call->duration_ms);
     }
 
+    public function test_keeps_no_bodies_when_told_so(): void
+    {
+        config(['llm.log.bodies' => false]);
+        $this->route(Purpose::Summarize, $this->provider('local', 'http://local.test/v1'), 'qwen2.5:7b');
+        Http::fake(['*' => Http::response(self::completion('Summary', 12, 3))]);
+
+        $result = Llm::request(Purpose::Summarize)->user('Summarize')->data('body', 'secret body')->run();
+
+        $call = Call::query()->sole();
+        $this->assertSame('Summary', $result->text);
+        $this->assertSame([null, null, null], [$call->request, $call->response, $call->result]);
+        $this->assertSame(15, $call->total_tokens);
+        $this->assertNotNull($call->bodies_pruned_at);
+    }
+
     public function test_prune_keeps_metrics_and_drops_old_bodies(): void
     {
         Llm::fake(['old', 'new']);

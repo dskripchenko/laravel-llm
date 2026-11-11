@@ -31,6 +31,11 @@ täglich ein; bei einem Schema pro Mandant das abschalten und den Befehl je
 Mandant aus dem eigenen Scheduler ausführen. `Llm::prune($days)` erledigt
 dasselbe aus dem Code.
 
+Mit `llm.log.bodies` = false (`LLM_LOG_BODIES=false`) werden gar keine
+Inhalte gespeichert: die Zeile eines Aufrufs hält Metriken, Gegenstand und
+Status, `bodies_pruned_at` wird sofort gesetzt — für Anwendungen, deren
+Prompts enthalten, was nicht gespeichert werden darf.
+
 ## Kontingente
 
 Tägliche Token-Budgets je **Mandantenschlüssel** und je

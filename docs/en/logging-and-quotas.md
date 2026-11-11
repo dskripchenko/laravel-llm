@@ -29,6 +29,11 @@ default) the package schedules it daily; with a schema per tenant, turn that
 off and run it per tenant from your own scheduler. `Llm::prune($days)` does
 the same from code.
 
+With `llm.log.bodies` false (`LLM_LOG_BODIES=false`) no bodies are kept
+at all: a call's row holds the metrics, the subject and the status, and is
+stamped `bodies_pruned_at` at once — for an application whose prompts carry
+what must not be stored.
+
 ## Quotas
 
 Daily token budgets per **tenant key** and per **project key**. The host
