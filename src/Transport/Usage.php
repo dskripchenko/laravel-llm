@@ -6,9 +6,13 @@ namespace Dskripchenko\Llm\Transport;
 
 final class Usage
 {
+    /**
+     * @param  float|null  $cost  What the provider says the call cost, when it says so (`usage.cost`)
+     */
     public function __construct(
         public readonly int $promptTokens = 0,
         public readonly int $completionTokens = 0,
+        public readonly ?float $cost = null,
     ) {}
 
     public function total(): int
@@ -18,7 +22,9 @@ final class Usage
 
     public function plus(self $other): self
     {
-        return new self($this->promptTokens + $other->promptTokens, $this->completionTokens + $other->completionTokens);
+        $cost = $this->cost === null && $other->cost === null ? null : ($this->cost ?? 0.0) + ($other->cost ?? 0.0);
+
+        return new self($this->promptTokens + $other->promptTokens, $this->completionTokens + $other->completionTokens, $cost);
     }
 
     /**
@@ -28,8 +34,9 @@ final class Usage
     {
         $prompt = $usage['prompt_tokens'] ?? 0;
         $completion = $usage['completion_tokens'] ?? 0;
+        $cost = $usage['cost'] ?? null;
 
-        return new self(is_numeric($prompt) ? (int) $prompt : 0, is_numeric($completion) ? (int) $completion : 0);
+        return new self(is_numeric($prompt) ? (int) $prompt : 0, is_numeric($completion) ? (int) $completion : 0, is_numeric($cost) && (float) $cost >= 0 ? (float) $cost : null);
     }
 
     /**

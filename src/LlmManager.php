@@ -17,6 +17,7 @@ use Dskripchenko\Llm\Results\RerankResult;
 use Dskripchenko\Llm\Routing\Router;
 use Dskripchenko\Llm\Testing\FakeSequence;
 use Dskripchenko\Llm\Testing\FakeTransport;
+use Dskripchenko\Llm\Transport\Attribution;
 use Dskripchenko\Llm\Transport\CallMeta;
 use Dskripchenko\Llm\Transport\EmbeddingRequest;
 use Dskripchenko\Llm\Transport\RerankRequest;
@@ -65,10 +66,10 @@ class LlmManager
      *
      * @param  string|list<string>  $input
      */
-    public function embed(string|array $input, ?string $scenario = null, ?Model $subject = null, ?QuotaScope $quota = null): EmbeddingResult
+    public function embed(string|array $input, ?string $scenario = null, ?Model $subject = null, ?QuotaScope $quota = null, ?Attribution $attribution = null): EmbeddingResult
     {
         $inputs = is_string($input) ? [$input] : $input;
-        $meta = new CallMeta(Purpose::Embed, $scenario ?? Purpose::Embed->value);
+        $meta = new CallMeta(Purpose::Embed, $scenario ?? Purpose::Embed->value, attribution: $attribution);
 
         return $this->executor->embed(new EmbeddingRequest($meta, '', $inputs), $this->context($meta, $subject, $quota));
     }
@@ -78,9 +79,9 @@ class LlmManager
      *
      * @param  list<string>  $documents
      */
-    public function rerank(string $query, array $documents, ?int $topN = null, ?string $scenario = null, ?Model $subject = null, ?QuotaScope $quota = null): RerankResult
+    public function rerank(string $query, array $documents, ?int $topN = null, ?string $scenario = null, ?Model $subject = null, ?QuotaScope $quota = null, ?Attribution $attribution = null): RerankResult
     {
-        $meta = new CallMeta(Purpose::Rerank, $scenario ?? Purpose::Rerank->value);
+        $meta = new CallMeta(Purpose::Rerank, $scenario ?? Purpose::Rerank->value, attribution: $attribution);
 
         return $this->executor->rerank(new RerankRequest($meta, '', $query, $documents, $topN), $this->context($meta, $subject, $quota));
     }

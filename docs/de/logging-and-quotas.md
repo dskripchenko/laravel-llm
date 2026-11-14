@@ -15,6 +15,9 @@ Route oder ein erneuter Versuch wegen des Schemas erzeugt weitere Zeilen.
 | `subject_type`, `subject_id` | die mit `about()` übergebene Morph-Referenz (Strings: Integer-, UUID- und ULID-Schlüssel passen) |
 | `tenant_key`, `project_key` | die Kontingentschlüssel |
 | `idempotency_key` | |
+| `on_behalf_of` | in wessen Namen der Aufruf erfolgte (`onBehalfOf()`) |
+| `attribution` | `project`, `task`, `run`, mit `attribute()` übergeben |
+| `cost` | aus der Antwort des Anbieters (`usage.cost`), sonst nach seinen `prices`; null – unbekannt |
 | `request`, `response`, `result` | Inhalte: das gesendete JSON (nie der API-Schlüssel), die Rohantwort, das geparste Ergebnis |
 | `bodies_pruned_at` | |
 

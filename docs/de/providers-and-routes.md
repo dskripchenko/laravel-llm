@@ -12,6 +12,8 @@
 | `is_cloud` | der Anbieter liegt außerhalb der Infrastruktur des Mandanten |
 | `cloud_enabled` | ein Administrator hat den Cloud-Anbieter freigegeben |
 | `is_enabled` | ein deaktivierter Anbieter wird übersprungen |
+| `attribution` | nimmt die Zuordnung des Aufrufs als Header an (ein Gateway, das danach eigene Abrechnung führt); standardmäßig false |
+| `prices` | pro Modell oder `*` für jedes: `{"input": 3, "output": 15}` pro Million Tokens; danach wird `cost` im Protokoll berechnet |
 
 ### Cloud-Anbieter
 
@@ -27,6 +29,31 @@
 Eine abgelehnte Cloud-Route wird übersprungen (mit einer Warnung im
 Anwendungslog) und ihre Ausweichroute versucht; bleibt nichts übrig, wird
 `CloudProviderNotEnabled` geworfen und nichts gesendet.
+
+### Zuordnung und Kosten
+
+Ein Aufruf kann sagen, in wessen Namen er erfolgt und zu welcher Arbeit er
+gehört:
+
+```php
+Llm::prompt(SummarizeArticle::class, ['article' => $text])
+    ->onBehalfOf($user->external_id)           // die ID einer Person oder eines Agenten beim Anmeldeanbieter
+    ->attribute(project: 'KB', task: 'KB-12', run: 'run-7')
+    ->run();
+
+Llm::embed($texts, attribution: new Attribution(onBehalfOf: 'agent-7'));
+```
+
+Im Aufrufprotokoll wird das immer festgehalten (`on_behalf_of`,
+`attribution`). Gesendet wird es nur an einen Anbieter mit
+`attribution = true`, als Header `X-On-Behalf-Of`, `X-Project`, `X-Task`
+und `X-Run` (`llm.attribution.headers`): Ein Gateway vor den Modellen führt
+danach seine eigene Abrechnung und gibt sie nicht weiter. Jeder andere
+Anbieter – vor allem ein Cloud-Anbieter – erhält sie nie.
+
+`cost` im Protokoll ist, was die Antwort des Anbieters angibt
+(`usage.cost`), sonst was die `prices` des Anbieters aus den Tokens ergeben;
+null, wenn beides unbekannt ist.
 
 ## Routen (`llm_routes`)
 
@@ -91,4 +118,5 @@ die Ergebnisse mit `history()` zurückgeben und erneut aufrufen.
 | `log.keep_bodies_days` | 30 | |
 | `log.schedule_prune` | true | `llm:prune` täglich einplanen |
 | `quota.tenant_tokens_per_day`, `quota.project_tokens_per_day` | null | Standardlimits |
+| `attribution.headers` | `X-On-Behalf-Of`, `X-Project`, `X-Task`, `X-Run` | Header-Namen für einen Anbieter mit `attribution`; ein leerer Name wird nicht gesendet |
 | `effect.attempts` | 3 | muss der Wiederholungsrichtlinie von `RunLlm` entsprechen |

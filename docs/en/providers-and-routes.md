@@ -12,6 +12,8 @@
 | `is_cloud` | the provider is outside the tenant's infrastructure |
 | `cloud_enabled` | an administrator allowed the cloud provider |
 | `is_enabled` | a disabled provider is skipped |
+| `attribution` | takes the call's attribution as headers (a gateway that keeps accounts by them); false by default |
+| `prices` | per model, or `*` for any: `{"input": 3, "output": 15}` per million tokens; the call log's `cost` is counted by them |
 
 ### Cloud providers
 
@@ -26,6 +28,30 @@
 A refused cloud route is skipped (with a warning in the application log) and
 its fallback is tried; when nothing is left, `CloudProviderNotEnabled` is
 thrown and nothing is sent.
+
+### Attribution and cost
+
+A call may say whom it is made for and what work it belongs to:
+
+```php
+Llm::prompt(SummarizeArticle::class, ['article' => $text])
+    ->onBehalfOf($user->external_id)           // a person's or an agent's id at the sign-in provider
+    ->attribute(project: 'KB', task: 'KB-12', run: 'run-7')
+    ->run();
+
+Llm::embed($texts, attribution: new Attribution(onBehalfOf: 'agent-7'));
+```
+
+It is always kept in the call log (`on_behalf_of`, `attribution`). It is
+sent only to a provider with `attribution = true`, as the headers
+`X-On-Behalf-Of`, `X-Project`, `X-Task` and `X-Run`
+(`llm.attribution.headers`): a gateway in front of the models keeps its own
+accounts by them and does not pass them on. Any other provider — a cloud
+vendor above all — never gets them.
+
+The log's `cost` is what the provider's answer says (`usage.cost`), else
+what the provider's `prices` make of the tokens; null when neither is
+known.
 
 ## Routes (`llm_routes`)
 
@@ -85,4 +111,5 @@ the package does not run tools or loop — pass the results back with
 | `log.keep_bodies_days` | 30 | |
 | `log.schedule_prune` | true | schedule `llm:prune` daily |
 | `quota.tenant_tokens_per_day`, `quota.project_tokens_per_day` | null | default limits |
+| `attribution.headers` | `X-On-Behalf-Of`, `X-Project`, `X-Task`, `X-Run` | header names for a provider with `attribution`; an empty name is not sent |
 | `effect.attempts` | 3 | must match `RunLlm`'s retry policy |

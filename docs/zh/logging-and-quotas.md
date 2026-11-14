@@ -14,6 +14,9 @@
 | `subject_type`、`subject_id` | 通过 `about()` 给出的多态引用（字符串：整数、UUID 和 ULID 键都可容纳） |
 | `tenant_key`、`project_key` | 配额键 |
 | `idempotency_key` | |
+| `on_behalf_of` | 调用代表谁发起（`onBehalfOf()`） |
+| `attribution` | 通过 `attribute()` 给出的 `project`、`task`、`run` |
+| `cost` | 取自提供方应答（`usage.cost`），否则按其 `prices` 计算；null 表示未知 |
 | `request`、`response`、`result` | 请求/响应体：发送的 JSON（绝不包含 API 密钥）、原始回答、解析后的结果 |
 | `bodies_pruned_at` | |
 

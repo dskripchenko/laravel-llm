@@ -14,6 +14,9 @@ One row per HTTP call to a provider — a fallback or a schema retry adds rows.
 | `subject_type`, `subject_id` | the morph reference given with `about()` (strings: integer, UUID and ULID keys fit) |
 | `tenant_key`, `project_key` | the quota keys |
 | `idempotency_key` | |
+| `on_behalf_of` | whom the call was made for (`onBehalfOf()`) |
+| `attribution` | `project`, `task`, `run` given with `attribute()` |
+| `cost` | from the provider's answer (`usage.cost`), else by its `prices`; null — not known |
 | `request`, `response`, `result` | bodies: the JSON sent (never the API key), the raw answer, the parsed result |
 | `bodies_pruned_at` | |
 
