@@ -15,6 +15,9 @@
 | `subject_type`, `subject_id` | morph-ссылка, переданная через `about()` (строки: подходят целочисленные, UUID- и ULID-ключи) |
 | `tenant_key`, `project_key` | ключи квот |
 | `idempotency_key` | |
+| `on_behalf_of` | от чьего имени сделан вызов (`onBehalfOf()`) |
+| `attribution` | `project`, `task`, `run`, переданные через `attribute()` |
+| `cost` | из ответа провайдера (`usage.cost`), иначе по его `prices`; null — неизвестна |
 | `request`, `response`, `result` | тела: отправленный JSON (API-ключ туда никогда не попадает), сырой ответ, разобранный результат |
 | `bodies_pruned_at` | |
 

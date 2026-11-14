@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Facade;
 /**
  * @method static \Dskripchenko\Llm\PendingRequest prompt(string|\Dskripchenko\Llm\Prompts\Prompt $prompt, array<string, mixed> $variables = [])
  * @method static \Dskripchenko\Llm\PendingRequest request(\Dskripchenko\Llm\Purpose|string $purpose = \Dskripchenko\Llm\Purpose::Chat)
- * @method static \Dskripchenko\Llm\Results\EmbeddingResult embed(string|list<string> $input, ?string $scenario = null, ?\Illuminate\Database\Eloquent\Model $subject = null, ?\Dskripchenko\Llm\Quota\QuotaScope $quota = null)
- * @method static \Dskripchenko\Llm\Results\RerankResult rerank(string $query, list<string> $documents, ?int $topN = null, ?string $scenario = null, ?\Illuminate\Database\Eloquent\Model $subject = null, ?\Dskripchenko\Llm\Quota\QuotaScope $quota = null)
+ * @method static \Dskripchenko\Llm\Results\EmbeddingResult embed(string|list<string> $input, ?string $scenario = null, ?\Illuminate\Database\Eloquent\Model $subject = null, ?\Dskripchenko\Llm\Quota\QuotaScope $quota = null, ?\Dskripchenko\Llm\Transport\Attribution $attribution = null)
+ * @method static \Dskripchenko\Llm\Results\RerankResult rerank(string $query, list<string> $documents, ?int $topN = null, ?string $scenario = null, ?\Illuminate\Database\Eloquent\Model $subject = null, ?\Dskripchenko\Llm\Quota\QuotaScope $quota = null, ?\Dskripchenko\Llm\Transport\Attribution $attribution = null)
  * @method static \Dskripchenko\Llm\Prompts\PromptRepository prompts()
  * @method static void resolveQuotaUsing(?\Closure $resolver)
  * @method static int prune(?int $days = null)

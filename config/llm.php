@@ -50,6 +50,21 @@ return [
     ],
 
     /*
+    | Attribution: whom a call is made for (`onBehalfOf()`) and the project,
+    | task and run it belongs to (`attribute()`). Always logged; sent as these
+    | headers only to providers with `attribution` set — a gateway that keeps
+    | accounts by them. A name left empty is not sent.
+    */
+    'attribution' => [
+        'headers' => [
+            'on_behalf_of' => env('LLM_HEADER_ON_BEHALF_OF', 'X-On-Behalf-Of'),
+            'project' => env('LLM_HEADER_PROJECT', 'X-Project'),
+            'task' => env('LLM_HEADER_TASK', 'X-Task'),
+            'run' => env('LLM_HEADER_RUN', 'X-Run'),
+        ],
+    ],
+
+    /*
     | Daily token limits. The host tells which keys a call counts against
     | with Llm::resolveQuotaUsing(); a QuotaScope may carry its own limits,
     | these are the defaults. null = unlimited.

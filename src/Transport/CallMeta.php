@@ -7,7 +7,8 @@ namespace Dskripchenko\Llm\Transport;
 use Dskripchenko\Llm\Purpose;
 
 /**
- * Who is calling and why. Transports ignore it; the fake matches on it.
+ * Who is calling and why. The fake matches on it; a transport sends only
+ * the attribution, and only to a provider that takes it.
  */
 final class CallMeta
 {
@@ -15,5 +16,6 @@ final class CallMeta
         public readonly Purpose $purpose,
         public readonly string $scenario,
         public readonly ?string $promptKey = null,
+        public readonly ?Attribution $attribution = null,
     ) {}
 }

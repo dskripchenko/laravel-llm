@@ -24,6 +24,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  * @property bool $is_cloud
  * @property bool $cloud_enabled
  * @property bool $is_enabled
+ * @property bool $attribution Takes the call's attribution as headers (a gateway with accounting of its own)
+ * @property array<string, array<string, mixed>>|null $prices Per model (or `*` for any), per million tokens: `input`, `output`
  */
 class Provider extends Model
 {
@@ -38,6 +40,7 @@ class Provider extends Model
         'is_cloud' => false,
         'cloud_enabled' => false,
         'is_enabled' => true,
+        'attribution' => false,
     ];
 
     /**
@@ -52,6 +55,8 @@ class Provider extends Model
             'is_cloud' => 'boolean',
             'cloud_enabled' => 'boolean',
             'is_enabled' => 'boolean',
+            'attribution' => 'boolean',
+            'prices' => 'array',
         ];
     }
 
@@ -72,6 +77,23 @@ class Provider extends Model
     public function limit(string $key, mixed $default = null): mixed
     {
         return ($this->limits ?? [])[$key] ?? $default;
+    }
+
+    /**
+     * What the usage costs by this provider's prices: the model's own, else
+     * those under `*`; null when neither is set.
+     */
+    public function cost(string $model, int $promptTokens, int $completionTokens): ?float
+    {
+        $prices = $this->prices ?? [];
+        $price = $prices[$model] ?? $prices['*'] ?? null;
+        if (! is_array($price)) {
+            return null;
+        }
+        $input = $price['input'] ?? 0;
+        $output = $price['output'] ?? 0;
+
+        return round(((is_numeric($input) ? (float) $input : 0.0) * $promptTokens + (is_numeric($output) ? (float) $output : 0.0) * $completionTokens) / 1_000_000, 8);
     }
 
     /** The base URL without a trailing slash, e.g. `http://127.0.0.1:11434/v1`. */

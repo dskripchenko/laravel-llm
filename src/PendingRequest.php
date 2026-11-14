@@ -11,6 +11,7 @@ use Dskripchenko\Llm\Prompts\ResolvedPrompt;
 use Dskripchenko\Llm\Quota\QuotaGuard;
 use Dskripchenko\Llm\Quota\QuotaScope;
 use Dskripchenko\Llm\Results\LlmResult;
+use Dskripchenko\Llm\Transport\Attribution;
 use Dskripchenko\Llm\Transport\CallMeta;
 use Dskripchenko\Llm\Transport\ChatRequest;
 use Illuminate\Database\Eloquent\Model;
@@ -53,6 +54,8 @@ final class PendingRequest
     private ?QuotaScope $quotaScope = null;
 
     private ?Mode $mode = null;
+
+    private ?Attribution $attribution = null;
 
     /**
      * @param  array<string, mixed>  $variables
@@ -206,6 +209,28 @@ final class PendingRequest
         return $this;
     }
 
+    /**
+     * The person or agent the call is made for (e.g. the subject of their
+     * account at the sign-in provider). Logged; sent as a header only to a
+     * provider that takes the attribution.
+     */
+    public function onBehalfOf(?string $who): self
+    {
+        return $this->attribute(new Attribution(onBehalfOf: $who));
+    }
+
+    /**
+     * The project, the task and the run the call belongs to; what is not
+     * given stays as it was.
+     */
+    public function attribute(?Attribution $attribution = null, ?string $project = null, ?string $task = null, ?string $run = null): self
+    {
+        $given = ($attribution ?? new Attribution)->merge(new Attribution(project: $project, task: $task, run: $run));
+        $this->attribution = $this->attribution === null ? $given : $this->attribution->merge($given);
+
+        return $this;
+    }
+
     /** Carried for the host (see Mode); does not change the call. */
     public function mode(Mode $mode): self
     {
@@ -301,7 +326,7 @@ final class PendingRequest
         }
         array_push($all, ...$this->history, ...$messages);
 
-        $meta = new CallMeta($this->purpose, $this->scenario ?? $this->prompt->key ?? $this->purpose->value, $this->prompt?->key);
+        $meta = new CallMeta($this->purpose, $this->scenario ?? $this->prompt->key ?? $this->purpose->value, $this->prompt?->key, $this->attribution);
         $request = new ChatRequest($meta, '', $all, $this->options, $this->tools, $this->toolChoice, $this->schema, $this->schemaName);
         $context = new CallContext(
             meta: $meta,

@@ -26,7 +26,7 @@ final class OpenAiCompatibleTransport implements Transport
 
     public function chat(Provider $provider, ChatRequest $request): ChatResponse
     {
-        $response = $this->post($provider, 'chat/completions', $request->payload());
+        $response = $this->post($provider, 'chat/completions', $request->payload(), meta: $request->meta);
         $json = $this->json($response);
 
         $choice = is_array($json['choices'] ?? null) ? ($json['choices'][0] ?? null) : null;
@@ -59,7 +59,7 @@ final class OpenAiCompatibleTransport implements Transport
 
     public function stream(Provider $provider, ChatRequest $request, callable $onDelta): ChatResponse
     {
-        $response = $this->post($provider, 'chat/completions', $request->payload(stream: true), stream: true);
+        $response = $this->post($provider, 'chat/completions', $request->payload(stream: true), stream: true, meta: $request->meta);
 
         $parser = new SseParser($onDelta);
         $body = $response->toPsrResponse()->getBody();
@@ -84,7 +84,7 @@ final class OpenAiCompatibleTransport implements Transport
 
     public function embed(Provider $provider, EmbeddingRequest $request): EmbeddingResponse
     {
-        $response = $this->post($provider, 'embeddings', ['model' => $request->model, 'input' => $request->inputs]);
+        $response = $this->post($provider, 'embeddings', ['model' => $request->model, 'input' => $request->inputs], meta: $request->meta);
         $json = $this->json($response);
 
         $rows = is_array($json['data'] ?? null) ? $json['data'] : [];
@@ -108,7 +108,7 @@ final class OpenAiCompatibleTransport implements Transport
         if ($request->topN !== null) {
             $payload['top_n'] = $request->topN;
         }
-        $response = $this->post($provider, 'rerank', $payload);
+        $response = $this->post($provider, 'rerank', $payload, meta: $request->meta);
         $json = $this->json($response);
 
         $ranking = [];
@@ -127,10 +127,10 @@ final class OpenAiCompatibleTransport implements Transport
     /**
      * @param  array<string, mixed>  $payload
      */
-    private function post(Provider $provider, string $path, array $payload, bool $stream = false): Response
+    private function post(Provider $provider, string $path, array $payload, bool $stream = false, ?CallMeta $meta = null): Response
     {
         try {
-            $response = $this->client($provider, $stream)->post($provider->endpoint($path), $payload);
+            $response = $this->client($provider, $stream, $meta)->post($provider->endpoint($path), $payload);
         } catch (ConnectionException $e) {
             throw TransportFailure::unavailable('Connection failed: '.$e->getMessage(), previous: $e);
         }
@@ -146,7 +146,7 @@ final class OpenAiCompatibleTransport implements Transport
         return $response;
     }
 
-    private function client(Provider $provider, bool $stream): PendingRequest
+    private function client(Provider $provider, bool $stream, ?CallMeta $meta = null): PendingRequest
     {
         $timeout = $provider->limit('timeout', $this->config->get('llm.http.timeout', 120));
         $connect = $this->config->get('llm.http.connect_timeout', 5);
@@ -157,6 +157,12 @@ final class OpenAiCompatibleTransport implements Transport
             ->connectTimeout(is_numeric($connect) ? (int) $connect : 5);
         if ($provider->api_key !== null && $provider->api_key !== '') {
             $request = $request->withToken($provider->api_key);
+        }
+        // Whose the call is goes only to a provider that keeps accounts by it, never to the model's vendor.
+        $attribution = $meta?->attribution;
+        if ($provider->attribution && $attribution !== null && ! $attribution->isEmpty()) {
+            $names = $this->config->get('llm.attribution.headers', []);
+            $request = $request->withHeaders($attribution->headers(is_array($names) ? $names : []));
         }
         if ($stream) {
             $request = $request->withOptions(['stream' => true])->withHeaders(['Accept' => 'text/event-stream']);

@@ -12,6 +12,8 @@
 | `is_cloud` | 提供方位于租户基础设施之外 |
 | `cloud_enabled` | 管理员已允许使用该云端提供方 |
 | `is_enabled` | 已禁用的提供方会被跳过 |
+| `attribution` | 以请求头接收调用的归属（按此自行记账的网关）；默认为 false |
+| `prices` | 按模型，或用 `*` 表示任意模型：每百万 token `{"input": 3, "output": 15}`；调用日志的 `cost` 按此计算 |
 
 ### 云端提供方
 
@@ -22,6 +24,23 @@
 
 被拒绝的云端路由会被跳过（并在应用日志中写入警告），转而尝试其备用路由；当没有剩余路由时，
 抛出 `CloudProviderNotEnabled`，且不会发送任何内容。
+
+### 调用归属与费用
+
+调用可以说明代表谁发起、属于哪项工作：
+
+```php
+Llm::prompt(SummarizeArticle::class, ['article' => $text])
+    ->onBehalfOf($user->external_id)           // 人员或智能体在登录提供方处的标识
+    ->attribute(project: 'KB', task: 'KB-12', run: 'run-7')
+    ->run();
+
+Llm::embed($texts, attribution: new Attribution(onBehalfOf: 'agent-7'));
+```
+
+调用日志始终保存这些信息（`on_behalf_of`、`attribution`）。只有 `attribution = true` 的提供方才会收到它们，以请求头 `X-On-Behalf-Of`、`X-Project`、`X-Task` 和 `X-Run` 发送（`llm.attribution.headers`）：模型前面的网关据此自行记账，不会继续转发。其他任何提供方——尤其是云端厂商——都不会收到。
+
+日志中的 `cost` 取提供方应答中给出的值（`usage.cost`），否则按提供方的 `prices` 由 token 数计算；两者都未知时为 null。
 
 ## 路由（`llm_routes`）
 
@@ -79,4 +98,5 @@
 | `log.keep_bodies_days` | 30 | |
 | `log.schedule_prune` | true | 每日调度 `llm:prune` |
 | `quota.tenant_tokens_per_day`、`quota.project_tokens_per_day` | null | 默认限额 |
+| `attribution.headers` | `X-On-Behalf-Of`、`X-Project`、`X-Task`、`X-Run` | 发往启用 `attribution` 的提供方时使用的请求头名；名称为空则不发送 |
 | `effect.attempts` | 3 | 必须与 `RunLlm` 的重试策略一致 |

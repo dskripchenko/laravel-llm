@@ -34,6 +34,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $tenant_key
  * @property string|null $project_key
  * @property string|null $idempotency_key
+ * @property string|null $on_behalf_of Whom the call was made for (Attribution)
+ * @property array{project?: string, task?: string, run?: string}|null $attribution
+ * @property float|null $cost From the provider's answer, else by its prices; null — not known
  * @property string|null $request
  * @property string|null $response
  * @property array<string, mixed>|null $result
@@ -55,6 +58,8 @@ class Call extends Model
             'purpose' => Purpose::class,
             'status' => CallStatus::class,
             'result' => 'array',
+            'attribution' => 'array',
+            'cost' => 'float',
             'bodies_pruned_at' => 'datetime',
         ];
     }
